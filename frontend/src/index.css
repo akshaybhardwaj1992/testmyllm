@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/600.css";
+@import "@fontsource/space-grotesk/700.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * TestMyLLM design tokens, derived from the logo:
+ *   brand orange #c2410c · ink #1c1917 · tagline grey #57534e · cream #fff7ed
+ * Status colours stay distinct from the brand orange (fail = crimson, warn = gold), meet WCAG AA on
+ * their backgrounds, and always ship with an icon + text (never colour alone).
+ */
+:root {
+  --brand: #c2410c;
+  --brand-ink: #1c1917;
+  --brand-cream: #fff7ed;
+
+  --background: #fffaf5;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: var(--foreground);
+  --muted: #f6efe7;
+  --muted-foreground: #57534e;
+  --border: #ebe1d6;
+  --input: #dbcfc2;
+  --ring: #c2410c;
+  --primary: #c2410c;
+  --primary-foreground: #fff7ed;
+  --secondary: #f6ebdf;
+  --secondary-foreground: #431407;
+  --accent: #fdeadb;
+  --accent-foreground: #7c2d12;
+  --destructive: #be123c;
+  --destructive-foreground: #fff1f2;
+  --sidebar: #fff7ed;
+
+  --pass: #15803d;
+  --pass-bg: #e7f5eb;
+  --fail: #be123c;
+  --fail-bg: #fde7ec;
+  --warn: #a16207;
+  --warn-bg: #fcf2d4;
+  --info: #0369a1;
+  --info-bg: #e2f0f8;
+  --na: #57534e;
+  --na-bg: #f0ebe5;
+
+  /* categorical chart slots, validated (dataviz validate_palette: light vs #fffaf5, dark vs #1c1917) */
+  --chart-1: #c2410c;
+  --chart-2: #257de0;
+  --chart-3: #00a888;
+  --chart-4: #6a4ce2;
+  --chart-5: #d28e05;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: #13100e;
+  --foreground: #f5f0ea;
+  --card: #1c1917;
+  --card-foreground: var(--foreground);
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+  --border: #34302c;
+  --input: #46413c;
+  --ring: #fb923c;
+  --primary: #f97316;
+  --primary-foreground: #1c1917;
+  --secondary: #2a2420;
+  --secondary-foreground: #f5f0ea;
+  --accent: #3b2619;
+  --accent-foreground: #fed7aa;
+  --destructive: #fb7185;
+  --destructive-foreground: #1c1917;
+  --sidebar: #181513;
+
+  --pass: #4ade80;
+  --pass-bg: #12301d;
+  --fail: #fb7185;
+  --fail-bg: #3b1520;
+  --warn: #facc15;
+  --warn-bg: #362c0b;
+  --info: #38bdf8;
+  --info-bg: #0c2a3a;
+  --na: #a8a29e;
+  --na-bg: #292524;
+
+  --chart-1: #e76624;
+  --chart-2: #338ced;
+  --chart-3: #00a888;
+  --chart-4: #9887ef;
+  --chart-5: #d28e05;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-brand: var(--brand);
+  --color-brand-cream: var(--brand-cream);
+  --color-pass: var(--pass);
+  --color-pass-bg: var(--pass-bg);
+  --color-fail: var(--fail);
+  --color-fail-bg: var(--fail-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-na: var(--na);
+  --color-na-bg: var(--na-bg);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    min-width: 1024px;
+  }
+  /* Headings use the logo's typeface */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 25%, transparent);
+  }
+  /* Slim, theme-aware scrollbars (one page scroll per screen; the sidebar scrolls only on short screens). */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--input) transparent;
+  }
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

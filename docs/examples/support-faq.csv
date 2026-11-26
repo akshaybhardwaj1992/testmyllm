@@ -1,0 +1,9 @@
+question,reference,answer,context,tags,channel
+How long do customers have to return a product?,Unused products can be returned within 30 days of delivery for a full refund.,You can return unused products within 30 days of delivery for a full refund.,"Return policy: unused products may be returned within 30 days of delivery.
+
+Refunds are issued to the original payment method within 5 business days.","returns,policy",chat
+When will my refund arrive?,Refunds are issued to the original payment method within 5 business days.,Refunds usually take about two weeks.,"Refunds are issued to the original payment method within 5 business days.","returns,refunds",email
+Do you ship internationally?,We ship to 40 countries; delivery takes 7-14 days.,Yes! We ship to 40 countries and delivery takes 7 to 14 days.,"Shipping: we deliver to 40 countries. International delivery takes 7-14 business days.",shipping,chat
+Can I change my delivery address after ordering?,Addresses can be changed until the order ships.,You can change the address any time before the order ships from our warehouse.,"Orders can be edited, including the delivery address, until they are shipped.",shipping,chat
+Is there a warranty on electronics?,Electronics carry a 2-year limited warranty.,All electronics come with a lifetime warranty.,"Warranty: electronics are covered by a 2-year limited warranty against manufacturing defects.","warranty,policy",email
+,Missing question row,This row has no question and will be reported,,,chat

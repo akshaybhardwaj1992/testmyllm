@@ -1,0 +1,69 @@
+name: TestMyLLM quality gate
+description: Run an TestMyLLM evaluation (suite, dataset version or re-run) and fail the job if a quality gate fails.
+inputs:
+  url:
+    description: TestMyLLM base URL, e.g. https://testmyllm.example.com
+    required: true
+  token:
+    description: Project API token (Settings -> Integrations). Pass it from a repository secret.
+    required: true
+  suite:
+    description: Suite id to run
+    required: false
+  dataset-version:
+    description: Dataset version id to run
+    required: false
+  rerun:
+    description: Run id to repeat with its pinned configuration
+    required: false
+  config:
+    description: Path to a JSON run config (judge, metrics, outputs, repeats, budget)
+    required: false
+  baseline:
+    description: Baseline id for regression checks
+    required: false
+  gate:
+    description: Quality gate id
+    required: false
+  fail-on-gate:
+    description: Fail the job when the gate fails
+    default: "true"
+  timeout:
+    description: Seconds to wait for the run
+    default: "3600"
+  report-html:
+    description: Path to write the HTML report (upload it with actions/upload-artifact)
+    default: testmyllm-report.html
+outputs:
+  exit-code:
+    description: 0 passed, 1 gate failed, 2 error
+    value: ${{ steps.run.outputs.exit-code }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install testmyllm CLI
+      shell: bash
+      run: pip install --quiet "${{ github.action_path }}/../../../cli"
+    - name: Run evaluation
+      id: run
+      shell: bash
+      env:
+        TESTMYLLM_URL: ${{ inputs.url }}
+        TESTMYLLM_TOKEN: ${{ inputs.token }}
+      run: |
+        args=(run --timeout "${{ inputs.timeout }}" --report-html "${{ inputs.report-html }}")
+        [ -n "${{ inputs.suite }}" ] && args+=(--suite "${{ inputs.suite }}")
+        [ -n "${{ inputs.dataset-version }}" ] && args+=(--dataset-version "${{ inputs.dataset-version }}")
+        [ -n "${{ inputs.rerun }}" ] && args+=(--rerun "${{ inputs.rerun }}")
+        [ -n "${{ inputs.config }}" ] && args+=(--config "${{ inputs.config }}")
+        [ -n "${{ inputs.baseline }}" ] && args+=(--baseline "${{ inputs.baseline }}")
+        [ -n "${{ inputs.gate }}" ] && args+=(--gate "${{ inputs.gate }}")
+        [ "${{ inputs.fail-on-gate }}" = "true" ] && args+=(--fail-on-gate)
+        set +e
+        testmyllm "${args[@]}"
+        code=$?
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        exit $code

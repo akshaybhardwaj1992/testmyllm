@@ -1,0 +1,29 @@
+# Sample: gate merges on AI quality. Copy to .github/workflows/llm-regression.yml and fill in the ids.
+# Secrets: TESTMYLLM_URL, TESTMYLLM_TOKEN (Settings -> Integrations -> API tokens).
+name: LLM regression
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ai-quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Evaluate and enforce quality gate
+        uses: ./.github/actions/testmyllm
+        with:
+          url: ${{ secrets.TESTMYLLM_URL }}
+          token: ${{ secrets.TESTMYLLM_TOKEN }}
+          suite: "1"                       # suite pinned to a dataset version
+          config: testmyllm/run-config.json  # judge, metrics, model under test, repeats, budget
+          baseline: "1"                    # the release you compare against
+          gate: "1"
+          fail-on-gate: "true"
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testmyllm-report
+          path: testmyllm-report.html

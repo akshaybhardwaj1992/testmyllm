@@ -1,0 +1,91 @@
+# TestMyLLM: `docker compose up --build`, then open http://localhost:8080
+# Ports bind to 127.0.0.1 only; put a TLS reverse proxy in front before exposing anything.
+# Project name kept from before the TestMyLLM rename: it prefixes the data volumes
+# (ai-testlab_pgdata, ...). Changing it would start on an empty database.
+name: ai-testlab
+
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql+psycopg://testlab:${POSTGRES_PASSWORD:?set in .env}@db:5432/testlab
+  REDIS_URL: redis://redis:6379/0
+  JWT_SECRET: ${JWT_SECRET:?set in .env}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set in .env}
+  ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+  COOKIE_SECURE: ${COOKIE_SECURE:-false}
+  PROVIDER_MAX_CONCURRENCY: ${PROVIDER_MAX_CONCURRENCY:-4}
+  # RAG connector SSRF guard: optional host allow-list; private networks only for local development
+  RAG_HOST_ALLOWLIST: ${RAG_HOST_ALLOWLIST:-}
+  RAG_ALLOW_PRIVATE: ${RAG_ALLOW_PRIVATE:-false}
+
+services:
+  # Demo RAG endpoint for trying live RAG evaluation: `docker compose --profile demo up -d`
+  # then use http://demo-rag:8090/ask (requires RAG_ALLOW_PRIVATE=true in .env, dev only).
+  demo-rag:
+    image: python:3.13-slim
+    profiles: ["demo"]
+    command: ["python", "/srv/app.py"]
+    volumes:
+      - ./docs/examples/demo-rag/app.py:/srv/app.py:ro
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: testlab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: testlab
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testlab"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    image: testmyllm-backend
+    environment: *backend-env
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - exports:/data   # report exports (local volume first; S3 later)
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  worker:
+    image: testmyllm-backend
+    environment: *backend-env
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "-B", "--pool=prefork", "--concurrency=2", "--loglevel=INFO"]
+    depends_on:
+      backend: { condition: service_healthy }  # migrations have run
+    stop_grace_period: 30s
+
+  frontend:
+    build: ./frontend
+    image: testmyllm-frontend
+    depends_on:
+      backend: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:8080:80"
+
+volumes:
+  pgdata:
+  redisdata:
+  exports:

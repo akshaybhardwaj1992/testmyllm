@@ -1,0 +1,14 @@
+{
+  "run_type": "llm",
+  "judge_config_id": 1,
+  "repeats": 3,
+  "budget_usd": 1.0,
+  "use_cache": true,
+  "metrics": [
+    {"metric": "answer_relevancy", "engine": "ragas", "threshold": 0.7},
+    {"metric": "answer_correctness", "engine": "deepeval", "threshold": 0.6}
+  ],
+  "outputs": [
+    {"label": "Candidate", "source": "provider", "provider_id": 1, "model": "openai/gpt-4o-mini", "max_tokens": 600}
+  ]
+}
